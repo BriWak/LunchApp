@@ -14,7 +14,6 @@ class RealGreetingService @Inject()(calendar: Calendar) extends GreetingService 
   }
 }
 
-@ImplementedBy(classOf[RealGreetingService])
 trait GreetingService {
   def greeting : String
 }

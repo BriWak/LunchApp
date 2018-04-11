@@ -22,7 +22,7 @@ object FakeAfternoonGreeter extends GreetingService {
   def greeting: String = {
     val currentHour = FakeAfternoonCalendar.get(Calendar.HOUR_OF_DAY)
     if (currentHour < 12)
-      s"Good morning!"
+      "Good morning!"
     else
       "Good afternoon!"
   }
@@ -67,6 +67,14 @@ class WelcomeControllerSpec extends PlaySpec with GuiceOneAppPerTest {
   }
 }
 
+object FakeMorningCalendar extends FakeCalendar {
+  override def get(field: Int): Int = 11
+}
+
+object FakeAfternoonCalendar extends FakeCalendar {
+  override def get(field: Int): Int = 13
+}
+
 class FakeCalendar extends java.util.Calendar {
   override def computeTime(): Unit = ???
 
@@ -83,12 +91,4 @@ class FakeCalendar extends java.util.Calendar {
   override def getGreatestMinimum(i: Int): Int = ???
 
   override def getLeastMaximum(i: Int): Int = ???
-}
-
-object FakeMorningCalendar extends FakeCalendar {
-  override def get(field: Int): Int = 11
-}
-
-object FakeAfternoonCalendar extends FakeCalendar {
-  override def get(field: Int): Int = 13
 }

@@ -1,5 +1,8 @@
 package controllers
 
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import models.Sandwich
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerTest
@@ -7,12 +10,17 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.SandwichService
 
+import scala.concurrent.Future
+
 class SandwichControllerSpec extends PlaySpec with GuiceOneAppPerTest {
 
     "SandwichController" should {
       "Have some basic information and be accessible at the correct route" in {
+        val application = new GuiceApplicationBuilder().
+          overrides(bind[SandwichService].to[IntegrationSandwichService]).build
+
         val request = FakeRequest(GET, "/sandwiches").withHeaders("Host" -> "localhost")
-        val home = route(app, request).get
+        val home = route(application, request).get
 
         //sanitation
         status(home) mustBe OK
@@ -52,19 +60,24 @@ class SandwichControllerSpec extends PlaySpec with GuiceOneAppPerTest {
         contentAsString(result) must include ("Fresh")
         contentAsString(result) must include ("£1.15")
     }
+    }
+}
+
+class IntegrationSandwichService extends SandwichService {
+  override def sandwiches(): Future[List[Sandwich]] = Future(List())
 }
 
 object FakeNoSandwichService extends SandwichService {
-  override def sandwiches(): List[Sandwich] = List()
+  override def sandwiches(): Future[List[Sandwich]] = Future(List())
 }
 
 object FakeSingleSandwichService extends SandwichService {
-  override def sandwiches(): List[Sandwich] = List(Sandwich("Ham", 1.55, "Very tasty"))
+  override def sandwiches(): Future[List[Sandwich]] = Future(List(Sandwich("Ham", 1.55, "Very tasty")))
 }
 
  object FakeMultiSandwichService extends SandwichService {
    val ham = Sandwich("Ham", 1.55, "Very tasty")
    val cheese = Sandwich("Cheese", 2.55, "Cheese tastic")
    val egg = Sandwich("Egg", 1.15, "Fresh")
-   override def sandwiches(): List[Sandwich] = List(ham, cheese, egg)}
-}
+   override def sandwiches(): Future[List[Sandwich]] = Future(List(ham, cheese, egg))
+ }
